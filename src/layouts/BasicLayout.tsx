@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import ProLayout, { MenuDataItem } from '@ant-design/pro-layout';
-import { ConnectRC, GlobalModelState, connect, Link, Loading } from 'alita';
+import { ConnectRC, GlobalModelState, connect, Link } from 'alita';
 import { SmileOutlined, HeartOutlined } from '@ant-design/icons';
 import { HeaderSearch, AvatarDropdown, SelectLang, NoticeIconView } from '@/components';
 import { LanguageItem } from '@/components/SelectLang';
@@ -22,7 +22,7 @@ const loopMenuItem = (menus: MenuDataItem[]): MenuDataItem[] =>
     children: children && loopMenuItem(children),
   }));
 
-const headSearchData = [
+const headSearchDataList = [
   {
     label: <a href="https://umijs.org/zh/guide/umi-ui.html">umi ui</a>,
     value: 'umi ui',
@@ -60,7 +60,6 @@ const RightContent: React.SFC<RightContentProps> = props => {
   if (theme === 'dark' && layout === 'topmenu') {
     className = `${styles.right}  ${styles.dark}`;
   }
-  console.log(notices);
   return (
     <div className={className}>
       <HeaderSearch
@@ -126,7 +125,7 @@ const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, locatio
       }}
       menuDataRender={() => loopMenuItem(route.routes as MenuDataItem[])}
       rightContentRender={() => (
-        <RightContent headSearchData={headSearchData} language={language} notices={notices} />
+        <RightContent headSearchData={headSearchDataList} language={language} notices={notices} />
       )}
     >
       <div
@@ -140,7 +139,7 @@ const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, locatio
   );
 };
 
-export default connect(({ global, loading }: { global: GlobalModelState; loading: Loading }) => ({
+export default connect(({ global }: { global: GlobalModelState }) => ({
   global,
   notices: global.notices,
 }))(BasicLayout);
