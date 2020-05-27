@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 export default {
   'POST /api/hello': {
-    text: 'Alita',
+    text: 'Alita1',
   },
   'POST /api/menu': (req: Request, res: Response) => {
     const defaultMenus = [

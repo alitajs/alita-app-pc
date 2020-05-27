@@ -1,10 +1,21 @@
 import React, { useEffect } from 'react';
 import ProLayout, { MenuDataItem } from '@ant-design/pro-layout';
-import { ConnectRC, GlobalModelState, connect, Link } from 'alita';
+import { ConnectRC, GlobalModelState, connect, Link, useIntl, IntlShape } from 'alita';
+
 import { SmileOutlined, HeartOutlined } from '@ant-design/icons';
-import { HeaderSearch, AvatarDropdown, SelectLang, NoticeIconView } from '@/components';
+import {
+  HeaderSearch,
+  AvatarDropdown,
+  SelectLang,
+  NoticeIconView,
+  WithExceptionOpChildren,
+} from '@/components';
+import { transformRoute } from '@umijs/route-utils';
 import { LanguageItem } from '@/components/SelectLang';
 import { NoticeItem } from '@/components/NoticeIconView';
+import accessFactory from '@/access';
+import { traverseModifyRoutes } from '@/utils/runtimeUtil';
+
 import logo from '../assets/logo.png';
 
 import styles from './index.less';
@@ -15,11 +26,17 @@ const IconMap = {
 };
 
 // 替换服务端数据中的icon
-const loopMenuItem = (menus: MenuDataItem[]): MenuDataItem[] =>
+const loopMenuItem = (menus: MenuDataItem[], intl: IntlShape): MenuDataItem[] =>
   menus.map(({ icon, children, ...item }) => ({
     ...item,
+    // name: intl.formatMessage(
+    //   {
+    //     id: item.name,
+    //     defaultMessage: item.name,
+    //   },
+    // ),
     icon: icon && IconMap[icon as string],
-    children: children && loopMenuItem(children),
+    children: children && loopMenuItem(children, intl),
   }));
 
 const headSearchDataList = [
@@ -53,7 +70,7 @@ export interface RightContentProps {
   notices?: NoticeItem[];
 }
 
-const RightContent: React.SFC<RightContentProps> = props => {
+const RightContent: React.SFC<RightContentProps> = (props) => {
   const { theme = 'dark', layout = 'sidemenu', language, headSearchData, notices = [] } = props;
   let className = styles.right;
 
@@ -87,7 +104,14 @@ interface PageProps {
   global: GlobalModelState;
 }
 
-const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, location, route }) => {
+const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, location }) => {
+  const pathName = location.pathname;
+  const intl = useIntl();
+  const access = accessFactory({
+    currentUser: {
+      access: 'admin',
+    },
+  });
   useEffect(() => {
     dispatch!({
       type: 'global/menu',
@@ -96,7 +120,25 @@ const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, locatio
       type: 'global/fetchNotices',
     });
   }, []);
-  console.log(route);
+  const serveMenuData = [
+    {
+      path: '/',
+      name: 'index',
+      icon: 'smile',
+    },
+    {
+      path: '/ListTableList',
+      name: 'list',
+      icon: 'smile',
+      hideInMenu: true,
+      access: 'canAdmin',
+    },
+  ];
+  const accrssMenu = traverseModifyRoutes(serveMenuData, access);
+  const { menuData, breadcrumb } = transformRoute(accrssMenu, true, intl.formatMessage, false);
+  const currentPathConfig = breadcrumb.get(pathName);
+  console.log(menuData);
+  console.log(currentPathConfig);
   const language = [
     {
       key: 'zh-CN',
@@ -112,7 +154,7 @@ const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, locatio
   const { notices } = global;
   return (
     <ProLayout
-      title="Alita Demo"
+      title="Demo"
       logo={logo}
       // menuHeaderRender={() => null}
       location={location}
@@ -120,10 +162,9 @@ const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, locatio
         if (menuItemProps.isUrl || menuItemProps.children || !menuItemProps.path) {
           return defaultDom;
         }
-
         return <Link to={menuItemProps.path}>{defaultDom}</Link>;
       }}
-      menuDataRender={() => loopMenuItem(route.routes as MenuDataItem[])}
+      menuDataRender={() => loopMenuItem(menuData as MenuDataItem[], intl)}
       rightContentRender={() => (
         <RightContent headSearchData={headSearchDataList} language={language} notices={notices} />
       )}
@@ -133,7 +174,9 @@ const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, locatio
           height: '100vh',
         }}
       >
-        {children}
+        <WithExceptionOpChildren currentPathConfig={currentPathConfig}>
+          {children}
+        </WithExceptionOpChildren>
       </div>
     </ProLayout>
   );

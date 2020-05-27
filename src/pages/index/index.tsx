@@ -8,6 +8,7 @@ interface PageProps extends ConnectProps {
 
 const IndexPage: FC<PageProps> = ({ index, dispatch }) => {
   const intl = useIntl();
+  const { name } = index;
   useEffect(() => {
     dispatch!({
       type: 'index/query',
@@ -24,6 +25,7 @@ const IndexPage: FC<PageProps> = ({ index, dispatch }) => {
           name: '旅行者',
         },
       )}
+      {name}
     </div>
   );
 };
