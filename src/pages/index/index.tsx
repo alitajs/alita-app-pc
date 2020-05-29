@@ -1,5 +1,5 @@
 import React, { FC, useEffect } from 'react';
-import { IndexModelState, ConnectProps, connect, useIntl } from 'alita';
+import { IndexModelState, ConnectProps, connect } from 'alita';
 import styles from './index.less';
 
 interface PageProps extends ConnectProps {
@@ -7,7 +7,7 @@ interface PageProps extends ConnectProps {
 }
 
 const IndexPage: FC<PageProps> = ({ index, dispatch }) => {
-  const intl = useIntl();
+  // const intl = useIntl();
   const { name } = index;
   useEffect(() => {
     dispatch!({
@@ -16,7 +16,7 @@ const IndexPage: FC<PageProps> = ({ index, dispatch }) => {
   }, []);
   return (
     <div className={styles.center}>
-      {intl.formatMessage(
+      {/* {intl.formatMessage(
         {
           id: 'WELCOME_WORLD',
           defaultMessage: '你好，旅行者',
@@ -24,7 +24,7 @@ const IndexPage: FC<PageProps> = ({ index, dispatch }) => {
         {
           name: '旅行者',
         },
-      )}
+      )} */}
       {name}
     </div>
   );

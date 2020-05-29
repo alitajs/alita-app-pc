@@ -1,43 +1,10 @@
 import React, { useEffect } from 'react';
-import ProLayout, { MenuDataItem } from '@ant-design/pro-layout';
-import { ConnectRC, GlobalModelState, connect, Link, useIntl, IntlShape } from 'alita';
-
-import { SmileOutlined, HeartOutlined } from '@ant-design/icons';
-import {
-  HeaderSearch,
-  AvatarDropdown,
-  SelectLang,
-  NoticeIconView,
-  WithExceptionOpChildren,
-} from '@/components';
-import { transformRoute } from '@umijs/route-utils';
+import { ConnectRC, GlobalModelState, connect, AccessLayout } from 'alita';
+import { HeaderSearch, AvatarDropdown, SelectLang, NoticeIconView } from '@/components';
 import { LanguageItem } from '@/components/SelectLang';
 import { NoticeItem } from '@/components/NoticeIconView';
-import accessFactory from '@/access';
-import { traverseModifyRoutes } from '@/utils/runtimeUtil';
-
 import logo from '../assets/logo.png';
-
 import styles from './index.less';
-
-const IconMap = {
-  smile: <SmileOutlined />,
-  heart: <HeartOutlined />,
-};
-
-// 替换服务端数据中的icon
-const loopMenuItem = (menus: MenuDataItem[], intl: IntlShape): MenuDataItem[] =>
-  menus.map(({ icon, children, ...item }) => ({
-    ...item,
-    // name: intl.formatMessage(
-    //   {
-    //     id: item.name,
-    //     defaultMessage: item.name,
-    //   },
-    // ),
-    icon: icon && IconMap[icon as string],
-    children: children && loopMenuItem(children, intl),
-  }));
 
 const headSearchDataList = [
   {
@@ -104,14 +71,8 @@ interface PageProps {
   global: GlobalModelState;
 }
 
-const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, location }) => {
-  const pathName = location.pathname;
-  const intl = useIntl();
-  const access = accessFactory({
-    currentUser: {
-      access: 'admin',
-    },
-  });
+const BasicLayout: ConnectRC<PageProps> = ({ dispatch, global, ...other }) => {
+  const { menu } = global;
   useEffect(() => {
     dispatch!({
       type: 'global/menu',
@@ -120,25 +81,7 @@ const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, locatio
       type: 'global/fetchNotices',
     });
   }, []);
-  const serveMenuData = [
-    {
-      path: '/',
-      name: 'index',
-      icon: 'smile',
-    },
-    {
-      path: '/ListTableList',
-      name: 'list',
-      icon: 'smile',
-      hideInMenu: true,
-      access: 'canAdmin',
-    },
-  ];
-  const accrssMenu = traverseModifyRoutes(serveMenuData, access);
-  const { menuData, breadcrumb } = transformRoute(accrssMenu, true, intl.formatMessage, false);
-  const currentPathConfig = breadcrumb.get(pathName);
-  console.log(menuData);
-  console.log(currentPathConfig);
+
   const language = [
     {
       key: 'zh-CN',
@@ -153,32 +96,20 @@ const BasicLayout: ConnectRC<PageProps> = ({ children, dispatch, global, locatio
   ];
   const { notices } = global;
   return (
-    <ProLayout
+    <AccessLayout
       title="Demo"
-      logo={logo}
-      // menuHeaderRender={() => null}
-      location={location}
-      menuItemRender={(menuItemProps, defaultDom) => {
-        if (menuItemProps.isUrl || menuItemProps.children || !menuItemProps.path) {
-          return defaultDom;
-        }
-        return <Link to={menuItemProps.path}>{defaultDom}</Link>;
+      initState={{
+        currentUser: {
+          access: 'admin',
+        },
       }}
-      menuDataRender={() => loopMenuItem(menuData as MenuDataItem[], intl)}
-      rightContentRender={() => (
-        <RightContent headSearchData={headSearchDataList} language={language} notices={notices} />
-      )}
-    >
-      <div
-        style={{
-          height: '100vh',
-        }}
-      >
-        <WithExceptionOpChildren currentPathConfig={currentPathConfig}>
-          {children}
-        </WithExceptionOpChildren>
-      </div>
-    </ProLayout>
+      logo={logo}
+      menuData={menu}
+      // rightContentRender={() => (
+      //   <RightContent headSearchData={headSearchDataList} language={language} notices={notices} />
+      // )}
+      {...other}
+    ></AccessLayout>
   );
 };
 
