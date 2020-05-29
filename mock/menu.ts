@@ -15,7 +15,7 @@ export default {
       name: 'list',
       icon: 'heart',
       access: 'canAdmin',
-      component: './ListTableList'
+      component: './ListTableList',
     },
   ],
 };

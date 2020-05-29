@@ -105,9 +105,9 @@ const BasicLayout: ConnectRC<PageProps> = ({ dispatch, global, ...other }) => {
       }}
       logo={logo}
       menuData={menu}
-      // rightContentRender={() => (
-      //   <RightContent headSearchData={headSearchDataList} language={language} notices={notices} />
-      // )}
+      rightContentRender={() => (
+        <RightContent headSearchData={headSearchDataList} language={language} notices={notices} />
+      )}
       {...other}
     ></AccessLayout>
   );

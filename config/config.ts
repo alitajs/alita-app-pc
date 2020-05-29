@@ -2,6 +2,7 @@ export default {
   appType: 'pc',
   locale: {},
   accessLayout: {
-    iconNames: ['smile']
-  }
+    iconNames: ['smile'],
+    useModel: true,
+  },
 };
